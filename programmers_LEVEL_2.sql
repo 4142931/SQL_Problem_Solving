@@ -196,3 +196,91 @@ SELECT *
 FROM FOOD_PRODUCT 
 WHERE PRICE = (SELECT MAX(PRICE)
                FROM FOOD_PRODUCT );
+               
+-- 카테고리 별 상품 개수 구하기
+SELECT LEFT(product_code, 2) AS CATEGORY
+      ,COUNT(*) AS PRODUCTS
+FROM PRODUCT 
+GROUP BY CATEGORY
+ORDER BY CATEGORY ASC;
+
+-- DATETIME에서 DATE로 형 변환
+SELECT ANIMAL_ID
+      ,NAME
+      ,DATE_FORMAT(DATETIME, '%Y-%m-%d') AS 날짜
+FROM ANIMAL_INS 
+ORDER BY ANIMAL_ID ASC; 
+
+-- 이름에 el이 들어가는 동물 찾기
+SELECT ANIMAL_ID
+      ,NAME
+FROM ANIMAL_INS 
+WHERE ANIMAL_TYPE = 'Dog'
+  AND NAME LIKE '%EL%'
+  AND NAME LIKE '%el%'
+ORDER BY NAME ASC; 
+
+-- 중성화 여부 파악하기
+SELECT ANIMAL_ID
+      ,NAME
+      ,CASE 
+            WHEN SEX_UPON_INTAKE LIKE 'Neutered%' OR SEX_UPON_INTAKE LIKE 'Spayed%' THEN 'O' ELSE 'X'
+       END AS 중성화 
+FROM ANIMAL_INS 
+ORDER BY ANIMAL_ID ASC;
+
+-- 연도 별 평균 미세먼지 농도 조회하기 ***
+SELECT YEAR(YM) AS YEAR 
+		# YEAR와 DATE_FORMAT의 차이점 
+        -- YEAR() 정수형 연도를 추출하는 함수 성능이 빠르고, 숫자 정렬 비교에 유리하다
+        -- DATE_FORMAT() 날짜를 문자열로 변환, '2022년', '2020-05'와 같은 형식된 날짜를 출력 
+			--  DATE_FORMAT()을 쓰면 틀릴 수 있다 반환값이 문자열이기 때문에 잘못된 정렬이 될 수 있음
+      ,ROUND(AVG(PM_VAL1), 2) AS PM10
+      ,ROUND(AVG(PM_VAL2), 2) AS `PM2.5`
+FROM AIR_POLLUTION 
+WHERE LOCATION2 = '수원'
+GROUP BY YEAR
+ORDER BY YEAR ASC;
+
+-- 루시와 엘라 찾기
+SELECT ANIMAL_ID
+      ,NAME
+      ,SEX_UPON_INTAKE
+FROM ANIMAL_INS 
+WHERE NAME IN ('Lucy', 'Ella', 'Pickle', 'Rogan', 'Sabrina', 'Mitty');
+
+-- 조건에 부합하는 중고거래 상태 조회하기
+SELECT BOARD_ID
+       ,WRITER_ID
+       ,TITLE
+       ,PRICE
+       ,CASE 
+            WHEN STATUS = 'SALE' THEN '판매중' 
+            WHEN STATUS = 'RESERVED' THEN '예약중' 
+            WHEN STATUS = 'DONE' THEN '거래완료' 
+            ELSE NULL
+        END AS STATUS
+FROM USED_GOODS_BOARD 
+WHERE CREATED_DATE LIKE '2022-10-05%'
+ORDER BY BOARD_ID DESC;
+
+-- 자동차 평균 대여 기간 구하기  
+SELECT car_id
+      ,ROUND(AVG(DATEDIFF(end_date, start_date) + 1), 1) AS AVERAGE_DURATION
+FROM CAR_RENTAL_COMPANY_RENTAL_HISTORY
+GROUP BY car_id
+HAVING AVERAGE_DURATION >= 7
+ORDER BY AVERAGE_DURATION DESC, car_id DESC;
+
+-- 분기별 분화된 대장균의 개체 수 구하기
+SELECT CASE
+            WHEN MONTH(DIFFERENTIATION_DATE) BETWEEN 1 AND 3 THEN '1Q'
+            WHEN MONTH(DIFFERENTIATION_DATE) BETWEEN 4 AND 6 THEN '2Q'
+            WHEN MONTH(DIFFERENTIATION_DATE) BETWEEN 7 AND 9 THEN '3Q'
+            WHEN MONTH(DIFFERENTIATION_DATE) BETWEEN 10 AND 12 THEN '4Q'
+            ELSE NULL
+       END AS QUARTER     
+      ,COUNT(*) AS ECOLI_COUNT
+FROM ECOLI_DATA 
+GROUP BY QUARTER
+ORDER BY QUARTER ASC;
