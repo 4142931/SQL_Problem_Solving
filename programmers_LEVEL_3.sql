@@ -1,5 +1,95 @@
 #programmers_LEVEL 3
 
+# 대여 기록이 존재하는 자동차 리스트 구하기 
+-- 쿼리를 작성하는 목표 : 테이블에서 자동차 종류가 '세단'인 자동차들 중 10월에 대여를 시작한 기록이 있는 자동차 ID 리스트를 출력
+-- 확인할 지표 : car_type, start_date, car_id
+-- 쿼리 계산 방법 :  조인을 통해 22년 10월, 세단인 조건으로 필터링 한 후 중복을 제외한 CAR_ID 값을 출력
+-- 데이터의 기간 : 2022-10
+-- 사용할 테이블 : CAR_RENTAL_COMPANY_CAR, CAR_RENTAL_COMPANY_RENTAL_HISTORY 
+-- JOIN KEY : CAR_ID
+-- 데이터 특징 : -
+SELECT DISTINCT C1.car_id AS CAR_ID
+FROM CAR_RENTAL_COMPANY_CAR AS C1
+JOIN CAR_RENTAL_COMPANY_RENTAL_HISTORY AS C2 ON C1.CAR_ID = C2.CAR_ID
+WHERE C2.start_date LIKE '2022-10%'
+  AND C1.car_type = '세단'
+ORDER BY CAR_ID DESC;
+
+# 조건별로 분류하여 주문상태 출력하기
+-- 쿼리를 작성하는 목표 : FOOD_ORDER 테이블에서 2022년 5월 1일을 기준으로 주문 ID, 제품 ID, 출고일자, 출고여부를 조회하는 SQL문을 작성
+-- 확인할 지표 : ORDER_ID, PRODUCT_ID, OUT_DATE
+-- 쿼리 계산 방법 : CASE문을 사용해 출고여부는 2022년 5월 1일까지 출고완료로 이 후 날짜는 출고 대기로 미정이면 출고미정으로 출력
+-- 데이터의 기간 : 2022
+-- 사용할 테이블 : FOOD_ORDER 
+-- JOIN KEY : -
+-- 데이터 특징 : 날짜 데이터 00:00:00 형식으로 DATE_FORMAT 사용해 형식 바꿀 것 
+SELECT ORDER_ID
+     , PRODUCT_ID
+     , DATE_FORMAT(OUT_DATE, '%Y-%m-%d') AS OUT_DATE
+     ,CASE 
+            WHEN OUT_DATE <= '2022-05-01 23:59:59' THEN '출고완료'
+            WHEN OUT_DATE >= '2022-05-01 23:59:59' THEN '출고대기'
+            ELSE '출고미정'
+      END AS 출고여부
+FROM FOOD_ORDER 
+ORDER BY ORDER_ID ASC;
+
+# 오랜 기간 보호한 동물(2)
+-- 쿼리를 작성하는 목표 : 입양을 간 동물 중, 보호 기간이 가장 길었던 동물 두 마리의 아이디와 이름을 조회하는 SQL문을 작성
+-- 확인할 지표 : ANIMAL_ID, NAME
+-- 쿼리 계산 방법 : 각 테이블을 조인해서 들어온 날짜와 나간 날짜의 차이로 보호 기간을 설정하고 가장 긴 시간 보호된 동물 출력 
+-- 데이터의 기간 : -
+-- 사용할 테이블 : ANIMAL_INS, ANIMAL_OUTS 
+-- JOIN KEY : ANIMAL_ID
+-- 데이터 특징 : ORDER BY DATEDIFF(O.DATETIME, I.DATETIME)에서 나간 날에서 들어온 날을 뺀 순으로 정렬
+SELECT I.ANIMAL_ID
+      ,I.NAME
+FROM ANIMAL_INS AS I
+JOIN ANIMAL_OUTS AS O ON I.ANIMAL_ID = O.ANIMAL_ID
+ORDER BY DATEDIFF(O.DATETIME, I.DATETIME) DESC
+LIMIT 2;
+
+# 대장균의 크기에 따라 분류하기 1
+-- 쿼리를 작성하는 목표 : 대장균 개체의 크기가 100 이하라면 'LOW', 100 초과 1000 이하라면 'MEDIUM', 1000 초과라면 'HIGH' 라고 분류
+-- 확인할 지표 : ID, SIZE
+-- 쿼리 계산 방법 : CASE문을 이용해 각 조건에 맞게 설정 한 뒤 출력 (단순한 문제) 
+-- 데이터의 기간 : - 
+-- 사용할 테이블 : ECOLI_DATA 
+-- JOIN KEY : -
+-- 데이터 특징 : -
+SELECT ID
+       ,CASE
+            WHEN SIZE_OF_COLONY <= 100 THEN 'LOW'
+            WHEN SIZE_OF_COLONY > 100 AND SIZE_OF_COLONY <= 1000  THEN 'MEDIUM'
+            WHEN SIZE_OF_COLONY > 1000 THEN 'HIGH'
+            ELSE NULL
+       END AS SIZE
+FROM ECOLI_DATA 
+ORDER BY ID ASC;
+
+# 조건에 맞는 사용자 정보 조회하기
+-- 쿼리를 작성하는 목표 : 중고 거래 게시물을 3건 이상 등록한 사용자의 사용자 ID, 닉네임, 전체주소, 전화번호를 조회
+-- 확인할 지표 : USER_ID, NICKNAME, 전체주소, 전화번호
+-- 쿼리 계산 방법 : 조건 절에 서브쿼리를 이용해서 게시판에 3번 이상 작성한 ID로 필터링, CONCAT, SUBSTR을 이용한 전화전호 출력
+-- 데이터의 기간 : - 
+-- 사용할 테이블 : USED_GOODS_BOARD, USED_GOODS_USER
+-- JOIN KEY : B.WRITER_ID = U.USER_ID
+-- 데이터 특징 : 전화번호 상에 SUBSTR로 진행하게 될 경우 자리수가 안맞으면 오류가 날 수 있음, 이 점 확인해야함
+-- 			  전체 주소에도 띄어쓰기 확인해야함.
+SELECT DISTINCT U.USER_ID
+      ,U.NICKNAME
+      ,CONCAT(U.CITY, ' ', U.STREET_ADDRESS1, ' ', U.STREET_ADDRESS2) AS 전체주소
+      ,CONCAT(LEFT(TLNO, 3), '-' ,SUBSTR(TLNO, 4, 4), '-' ,RIGHT(TLNO, 4)) AS 전화번호
+FROM USED_GOODS_BOARD AS B
+JOIN USED_GOODS_USER  AS U ON B.WRITER_ID = U.USER_ID
+WHERE B.WRITER_ID IN 
+                     (SELECT WRITER_ID
+                     FROM USED_GOODS_BOARD 
+                     GROUP BY WRITER_ID
+                     HAVING COUNT(*) >= 3)
+ORDER BY USER_ID DESC;
+
+
 -- 물고기 종류 별 대어 찾기
 SELECT F.ID
        ,FN.FISH_NAME
