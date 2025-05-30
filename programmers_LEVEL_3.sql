@@ -1,5 +1,41 @@
 #programmers_LEVEL 3
 
+# 헤비 유저가 소유한 장소
+-- 쿼리를 작성하는 목표 : 헤비 유저가 등록한 공간의 정보를 아이디 순으로 조회하는 SQL문을 작성
+-- 확인할 지표 : HOST_ID
+-- 쿼리 계산 방법 : 유저 공간을 1개 등록했을 경우 헤비 유저가 아니기 때문에 서브쿼리를 이용해 
+--               HOST_ID 별로 그룹화 한 다음 HVING에서 필터링해 다중행 서브쿼리  
+-- 데이터의 기간 : -
+-- 사용할 테이블 : PLACES
+-- JOIN KEY : -
+-- 데이터 특징 : -
+SELECT ID, NAME, HOST_ID 
+FROM PLACES 
+WHERE HOST_ID IN (
+                    SELECT HOST_ID
+                    FROM PLACES 
+                    GROUP BY HOST_ID 
+                    HAVING COUNT(*) >= 2
+                 )
+ORDER BY ID ASC;
+
+
+# 조회수가 가장 많은 중고거래 게시판의 첨부파일 조회하기
+-- 쿼리를 작성하는 목표 : 두 테이블에서 조회수가 가장 높은 중고거래 게시물에 대한 첨부파일 경로를 조회
+-- 확인할 지표 : FILE_PATH, FILE_ID,	FILE_EXT,	FILE_NAME,	BOARD_ID
+-- 쿼리 계산 방법 : CONCAT을 이용해 출력 값을 붙여주고, WHERE 조건 절에 가장 높은 뷰를 가진 게시물을 필터링
+-- 데이터의 기간 : -
+-- 사용할 테이블 : USED_GOODS_BOARD, USED_GOODS_FILE 
+-- JOIN KEY : BOARD_ID
+-- 데이터 특징 : -
+SELECT CONCAT('/home/grep/src/',B.BOARD_ID,'/',FILE_ID,FILE_NAME,FILE_EXT) AS FILE_PATH
+FROM USED_GOODS_BOARD AS B
+JOIN USED_GOODS_FILE AS F ON B.BOARD_ID = F.BOARD_ID
+WHERE B.BOARD_ID IN  (SELECT FIRST_VALUE(BOARD_ID) OVER(ORDER BY VIEWS DESC) 
+                      FROM USED_GOODS_BOARD                                )
+ORDER BY FILE_ID DESC;
+
+
 # 대여 기록이 존재하는 자동차 리스트 구하기 
 -- 쿼리를 작성하는 목표 : 테이블에서 자동차 종류가 '세단'인 자동차들 중 10월에 대여를 시작한 기록이 있는 자동차 ID 리스트를 출력
 -- 확인할 지표 : car_type, start_date, car_id
