@@ -1,5 +1,40 @@
 #programmers_LEVEL 3
 
+# 대장균의 크기에 따라 분류하기 
+-- 쿼리를 작성하는 목표 : 대장균 개체의 ID와 분류된 이름(COLONY_NAME)을 출력하는 SQL 문을 작성
+-- 확인할 지표 : SIZE_OF_COLONY
+-- 쿼리 계산 방법 : PERCENT_RANK()를 이용해 SIZE_OF_COLONY의 %범위 값을 구한 후 CASE 문을 통해 각 COLONY_NAME 설정
+-- 데이터의 기간 : -
+-- 사용할 테이블 : ECOLI_DATA 
+-- JOIN KEY : -
+-- 데이터 특징 : -
+SELECT ID
+      ,CASE 
+            WHEN PERCENT_RANK() OVER(ORDER BY SIZE_OF_COLONY DESC) <= 0.25 THEN 'CRITICAL'
+            WHEN PERCENT_RANK() OVER(ORDER BY SIZE_OF_COLONY DESC) <= 0.50 THEN 'HIGH'
+            WHEN PERCENT_RANK() OVER(ORDER BY SIZE_OF_COLONY DESC) <= 0.75 THEN 'MEDIUM'
+            ELSE 'LOW'
+       END AS COLONY_NAME
+FROM ECOLI_DATA 
+ORDER BY ID ASC;
+
+
+
+# 대장균들의 자식의 수 구하기
+-- 쿼리를 작성하는 목표 : 대장균 개체의 ID(ID)와 자식의 수(CHILD_COUNT)를 출력하는 SQL 문을 작성
+-- 확인할 지표 : ID, PARENT_ID
+-- 쿼리 계산 방법 : SELF JOIN을 이용해 ID, PARENT_ID를 LEFT JOIN하여 GROUP BY와 COUNT를 이용해 계산
+-- 데이터의 기간 : - 
+-- 사용할 테이블 : ECOLI_DATA
+-- JOIN KEY : E1.ID = E2.PARENT_ID
+-- 데이터 특징 : PARENT_ID 컬럼에 NULL 값이 존재, COUNT(PARENT_ID) 명시할 것
+SELECT E1.ID AS ID
+      ,COUNT(E2.PARENT_ID) AS CHILD_COUNT
+FROM ECOLI_DATA AS E1
+LEFT JOIN ECOLI_DATA AS E2 ON E1.ID = E2.PARENT_ID
+GROUP BY E1.ID
+ORDER BY ID ASC;
+
 # 헤비 유저가 소유한 장소
 -- 쿼리를 작성하는 목표 : 헤비 유저가 등록한 공간의 정보를 아이디 순으로 조회하는 SQL문을 작성
 -- 확인할 지표 : HOST_ID
