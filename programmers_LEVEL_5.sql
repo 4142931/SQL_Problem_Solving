@@ -1,4 +1,4 @@
-#programmers : 상품을 구매한 회원 비율 구하기
+# 상품을 구매한 회원 비율 구하기
 # https://school.programmers.co.kr/learn/courses/30/lessons/131534
 -- 쿼리를 작성하는 목표 : 상품을 구매한 회원의 비율 구하 기
 -- 확인할 지표 : PUCHASED_RATIO
@@ -17,4 +17,4 @@ FROM USER_INFO AS U
 JOIN ONLINE_SALE AS O ON U.user_id = O.user_id
 WHERE YEAR(U.joined) = 2021
 GROUP BY YEAR, MONTH
-ORDER BY YEAR ASC, MONTH ASC
+ORDER BY YEAR ASC, MONTH ASC;
