@@ -156,3 +156,34 @@ JOIN FOOD_ORDER AS O ON P.PRODUCT_ID = O.PRODUCT_ID
 WHERE PRODUCE_DATE BETWEEN '2022-05-01 00:00:00' AND '2022-05-31 23:59:59'
 GROUP BY P.PRODUCT_ID, P.PRODUCT_NAME
 ORDER BY TOTAL_SALES DESC, P.PRODUCT_ID ASC;
+
+# 주문량이 많은 아이스크림들 조회하기
+-- 쿼리를 작성하는 목표 : 7월 아이스크림 총 주문량과 상반기의 아이스크림 총 주문량을 더한 값이 큰 순서대로 상위 3개의 맛을 조회하는 SQL 문을 작성
+-- 확인할 지표 : SHIPMENT_ID, FLAVOR, TOTAL_ORDER
+-- 쿼리 계산 방법 : UNION ALL을 이용해 테이블을 하나로 만들고 GROUP BY, ORDER BY SUM()을 이용한 합계로 순서를 결정한다. 
+-- 데이터의 기간 : -
+-- 사용할 테이블 :FIRST_HALF, JULY
+-- JOIN KEY : SHIPMENT_ID	
+-- 데이터 특징 : -
+WITH TOTAL AS
+(    
+    SELECT
+    SHIPMENT_ID,
+    FLAVOR,
+    TOTAL_ORDER
+    FROM FIRST_HALF
+
+    UNION ALL
+
+    SELECT
+    SHIPMENT_ID,
+    FLAVOR,
+    TOTAL_ORDER
+    FROM JULY
+)
+SELECT FLAVOR
+FROM TOTAL
+GROUP BY FLAVOR
+ORDER BY SUM(TOTAL_ORDER) DESC
+LIMIT 3;
+
